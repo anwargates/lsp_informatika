@@ -16,19 +16,26 @@ import PicSKKNI from '../../image/ic_baseline-dvr.png'
 import { StyleSheet } from 'react-native'
 import { GLOBAL_STYLE } from '../Styles/Styles'
 import { HStack, VStack } from 'native-base'
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { setDefaultState } from '../../features/slice/apl01Slice'
 
 export const AsesiComponent = () => {
   const authState = useSelector((state) => state.auth)
   const navigation = useNavigation()
   const dispatch = useDispatch()
 
-  const handleLogout = async () => {
-    await dispatch(logout())
-    // navigation.replace('Login')
-    ToastAndroid.show('Logout Berhasil', ToastAndroid.SHORT)
-  }
+  useFocusEffect(
+    React.useCallback(() => {
+      // Do something when the screen is focused
+      dispatch(setDefaultState())
+      return () => {
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+      }
+    }, [])
+  )
 
+  console.log('AUTH STATE IN ASESI', authState)
   return (
     <LinearGradient
       colors={COLORS.gradientMain}
@@ -36,8 +43,21 @@ export const AsesiComponent = () => {
       <View>
         <VStack style={styles.header}>
           <TouchableOpacity>
-            <Text style={{ color: 'black', fontSize: 24 }}>
-              Selamat Datang, {authState.user.username}
+            <Text style={{ color: 'white', fontSize: 16 }}>Selamat Datang</Text>
+            <Text style={{ color: 'white', fontSize: 32 }}>
+              {authState.user?.apl_01s[0]?.namaLengkap}
+              {/* Muhammad Anwar Firdaus */}
+            </Text>
+            <View
+              style={{
+                marginVertical: 16,
+                borderBottomColor: 'white',
+                borderBottomWidth: StyleSheet.hairlineWidth,
+              }}
+            />
+            <Text style={{ color: 'white', fontSize: 14 }}>Skema saat ini</Text>
+            <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
+              Junior Web Developer
             </Text>
           </TouchableOpacity>
         </VStack>
@@ -46,32 +66,33 @@ export const AsesiComponent = () => {
             <CardComponent
               text='APL-01'
               onPress={() =>
-                navigation.navigate('APL01', {
-                  role: authState.user.role.name,
-                  authState,
+                navigation.navigate('FormAPL01', {
+                  role: authState?.user?.role.name,
+                  intent: 'Edit',
+                  content: authState?.user,
                 })
               }
-              path={PicEvent}
+              path='information-outline'
             />
             <CardComponent
               text='APL-02'
               //   onPress={() => navigation.navigate('Rekap')}
-              path={PicRekap}
-            />
-          </View>
-          {/* <View style={styles.row}>
-            <CardComponent
-              text='Asesi'
-              onPress={() => navigation.navigate('Asesi')}
-              path={PicAsesi}
-            />
-            <CardComponent
-              text='Asesor'
-              onPress={() => navigation.navigate('Asesor')}
-              path={PicAsesor}
+              path='clipboard-check-outline'
             />
           </View>
           <View style={styles.row}>
+            <CardComponent
+              text='AK-01'
+              // onPress={() => navigation.navigate('Asesi')}
+              path='book-check-outline'
+            />
+            <CardComponent
+              text='AK-02'
+              // onPress={() => navigation.navigate('Asesor')}
+              path='certificate-outline'
+            />
+          </View>
+          {/* <View style={styles.row}>
             <CardComponent
               text='SKKNI'
               // onPress={() => navigation.navigate("Asesi")}
@@ -98,12 +119,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     // backgroundColor: "#E9FFE5",
     // alignItems: "center",
-    justifyContent: 'center',
+    // justifyContent: 'center',
   },
   header: {
-    backgroundColor: COLORS.secondary,
+    backgroundColor: COLORS.third,
+    // height: 200,
     padding: 16,
     borderRadius: 8,
+    margin: 6,
   },
   // text: {
   //   color: "#ffffff",

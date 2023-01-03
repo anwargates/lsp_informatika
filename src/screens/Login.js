@@ -1,4 +1,4 @@
-import { MaterialIcons } from '@expo/vector-icons'
+import { MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons'
 import { VStack, Text, Input, Icon } from 'native-base'
 import React from 'react'
 import { useState } from 'react'
@@ -16,6 +16,11 @@ export const Login = ({ navigation }) => {
   const [password, setPassword] = useState('')
   const authState = useSelector((state) => state.auth)
   const dispatch = useDispatch()
+
+  const [show, setShow] = useState(false)
+
+  const handleShow = () => setShow(!show)
+
   return (
     <>
       {/* {authState.isLoginSuccess && navigation.replace('Home')} */}
@@ -32,7 +37,7 @@ export const Login = ({ navigation }) => {
               as={<MaterialIcons name='person' />}
               size={5}
               ml='2'
-              color='black'
+              color={COLORS.third}
             />
           }
           name='email'
@@ -48,11 +53,21 @@ export const Login = ({ navigation }) => {
               as={<MaterialIcons name='vpn-key' />}
               size={5}
               ml='2'
-              color='black'
+              color={COLORS.third}
             />
           }
+          InputRightElement={
+            <TouchableOpacity onPress={handleShow}>
+              <Icon
+                as={<MaterialCommunityIcons name={!show ? 'eye' : 'eye-off'} />}
+                size={6}
+                mx='2'
+                color={COLORS.third}
+              />
+            </TouchableOpacity>
+          }
           name='password'
-          type='password'
+          type={show ? 'text' : 'password'}
           variant='rounded'
           value={password}
           onChangeText={(value) => setPassword(value)}

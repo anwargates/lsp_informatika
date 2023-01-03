@@ -28,7 +28,7 @@ export const FORM_STYLES = StyleSheet.create({
     // zIndex: 999,
   },
   scrollView: {
-    paddingHorizontal: 32,
+    paddingHorizontal: 16,
   },
   headerText: {
     fontSize: 16,
@@ -62,9 +62,10 @@ export const FORM_STYLES = StyleSheet.create({
   inputFile: {
     flex: 1,
     zIndex: -1,
-    justifyContent:'center',
-    marginHorizontal:8,
-    marginVertical: 12,
+    justifyContent: 'center',
+    marginHorizontal: 8,
+    marginTop: 12,
+    marginBottom: 0,
     borderRadius: 8,
     padding: 16,
     borderStyle: 'dashed',
@@ -90,10 +91,12 @@ export const FORM_STYLES = StyleSheet.create({
     alignContent: 'center',
     backgroundColor: COLORS.fourth,
     submit: {
+      height: 50,
+      borderRadius: 0,
       position: 'absolute',
-      bottom: 16,
-      left: 16,
-      right: 16,
+      bottom: 0,
+      left: 0,
+      right: 0,
       shadowColor: '#000000',
       shadowOffset: {
         width: 0,
@@ -125,6 +128,39 @@ export const FORM_STYLES = StyleSheet.create({
       borderBottomLeftRadius: 4,
     },
     female: {
+      borderTopRightRadius: 4,
+      borderBottomRightRadius: 4,
+    },
+    enabled: {
+      backgroundColor: COLORS.third,
+      text: {
+        color: COLORS.secondary,
+        alignSelf: 'center',
+      },
+    },
+  },
+  approval: {
+    padding: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  approvalButton: {
+    flex: 1,
+    justifyContent: 'center',
+    flexDirection: 'row',
+    height: 50,
+    marginVertical: 8,
+    paddingHorizontal: 8,
+    borderWidth: 1,
+    text: {
+      color: COLORS.third,
+      alignSelf: 'center',
+    },
+    left: {
+      borderTopLeftRadius: 4,
+      borderBottomLeftRadius: 4,
+    },
+    right: {
       borderTopRightRadius: 4,
       borderBottomRightRadius: 4,
     },

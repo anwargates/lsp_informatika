@@ -1,9 +1,11 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { FormControl, Input, VStack, TextArea, Icon } from 'native-base'
+import { useSelector } from 'react-redux'
 import { COLORS } from '../Colors/Colors'
 import { FORM_STYLES } from '../Styles/FormStyles'
 
 export const InputCard = (props) => {
+  const roleState = useSelector((state) => state.auth.user.role.name)
   const [formState, setFormState] = props.handle
 
   const handleChange = (name, value) => {
@@ -16,30 +18,6 @@ export const InputCard = (props) => {
   }
 
   return (
-    // <VStack style={FORM_STYLES.inputCard}>
-    //   <FormControl.Label _text={FORM_STYLES.inputLabel}>
-    //     {props.label}
-    //   </FormControl.Label>
-    //   {props.name !== 'alamatRumah' ? (
-    //     <Input
-    //       name={props.name}
-    //       variant='unstyled'
-    //       value={formState}
-    //       // onChange={handle.handleChange}
-    //       onChangeText={(value) => handleChange(props.name, value)}
-    //       style={FORM_STYLES.input}
-    //     />
-    //   ) : (
-    //     <TextArea
-    //       name={props.name}
-    //       variant='unstyled'
-    //       value={formState}
-    //       // onChange={handle.handleChange}
-    //       onChangeText={(value) => handleChange(props.name, value)}
-    //       style={FORM_STYLES.input}
-    //     />
-    //   )}
-    // </VStack>
     <VStack style={FORM_STYLES.inputCard}>
       <FormControl.Label _text={FORM_STYLES.inputLabel}>
         {props.label}
@@ -58,11 +36,12 @@ export const InputCard = (props) => {
           backgroundColor='white'
           borderColor='white'
           // variant='rounded'
-          value={formState}
+          value={formState[props.name]}
           placeholder={props.label}
           name={props.name}
           onChangeText={(value) => handleChange(props.name, value)}
           style={FORM_STYLES.input}
+          isReadOnly={roleState === 'Asesi' || props.from === 'tambahUser' ? false : true}
         />
       ) : (
         <TextArea
@@ -83,6 +62,7 @@ export const InputCard = (props) => {
           value={formState}
           onChangeText={(value) => handleChange(props.name, value)}
           style={FORM_STYLES.input}
+          isReadOnly={roleState === 'Asesi' ? false : true}
         />
       )}
     </VStack>

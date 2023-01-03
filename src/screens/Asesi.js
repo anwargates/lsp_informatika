@@ -11,7 +11,11 @@ import {
 } from 'react-native'
 import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchAsesi, searchAsesi } from '../features/slice/asesiSlice'
+import {
+  fetchAsesi,
+  fetchAsesiForAsesor,
+  searchAsesi,
+} from '../features/slice/asesiSlice'
 import { ToastAndroid } from 'react-native'
 import Modal from 'react-native-modalbox'
 import { GLOBAL_STYLE } from '../components/Styles/Styles'
@@ -19,10 +23,17 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { COLORS } from '../components/Colors/Colors'
 import { RefreshControl } from 'react-native'
 import { ActivityIndicator } from 'react-native'
+import { FORM_STYLES } from '../components/Styles/FormStyles'
+import { BlurView } from 'expo-blur'
+import { useFocusEffect } from '@react-navigation/native'
 
 export default function Asesi({ navigation }) {
+  const roleState = useSelector((state) => state.auth.user.role.name)
+  const asesorID = roleState
+    ? useSelector((state) => state.auth.user.asesorAccount?.id)
+    : ''
   const [refreshing, setRefreshing] = useState(false)
-  const [modalContent, setModalContent] = useState({})
+  const [modalContent, setModalContent] = useState(null)
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
   const asesiState = useSelector((state) => state.asesi)
@@ -31,10 +42,19 @@ export default function Asesi({ navigation }) {
 
   const loadData = () => {
     setRefreshing(true)
-    dispatch(fetchAsesi())
+    if (roleState === 'Asesor') {
+      dispatch(fetchAsesiForAsesor(asesorID))
+    } else {
+      dispatch(fetchAsesi())
+    }
     new Promise((resolve) => setTimeout(resolve, 2000)).then(() =>
       setRefreshing(false)
     )
+  }
+
+  const handleSelectItem = (item) => {
+    setModalContent(item)
+    setIsOpen(true)
   }
 
   const handleSearch = () => {
@@ -43,16 +63,24 @@ export default function Asesi({ navigation }) {
 
   useEffect(() => {
     loadData()
-    // console.log("ON HOME STATE", asesiState);
   }, [])
 
   return (
     <LinearGradient
       colors={COLORS.gradientMain}
       style={styles.container}>
-      {/* <Text style={styles.text}>This is Asesi Page</Text> */}
+      {console.log('ON HOME STATE', asesiState)}
       {asesiState.isPending ? (
-        <ActivityIndicator size='large'></ActivityIndicator>
+        <BlurView
+          intensity={80}
+          tint='light'
+          style={FORM_STYLES.blurContainer}>
+          {/* <ActivityIndicator
+            color='black'
+            size='large'
+            style={FORM_STYLES.spinner}
+          /> */}
+        </BlurView>
       ) : null}
       <Input
         InputRightElement={
@@ -72,15 +100,20 @@ export default function Asesi({ navigation }) {
         borderColor='white'
         value={search}
         placeholder='Cari Asesi'
+        onEndEditing={(e) => {
+          handleSearch()
+          setSearch(e)
+        }}
         onChangeText={(e) => setSearch(e)}
         style={styles.searchBar}
       />
       <FlatList
         style={styles.flatlist}
-        data={asesiState.profiles}
+        data={asesiState?.profiles}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            // refreshing={refreshing}
+            refreshing={asesiState.isPending}
             onRefresh={loadData}
           />
         }
@@ -89,14 +122,11 @@ export default function Asesi({ navigation }) {
             <>
               <TouchableOpacity
                 style={styles.card}
-                onPress={() => {
-                  setModalContent(item)
-                  setIsOpen(true)
-                }}>
+                onPress={() => handleSelectItem(item)}>
                 <Text style={styles.card.text}>
-                  {item.attributes.namaLengkap}
+                  {item?.apl_01s[0]?.namaLengkap}
                 </Text>
-                <Text>{item.attributes.email}</Text>
+                <Text>{item?.email}</Text>
               </TouchableOpacity>
             </>
           )
@@ -110,17 +140,19 @@ export default function Asesi({ navigation }) {
         easing={Easing.elastic(0)}
         isOpen={isOpen}
         onClosed={() => setIsOpen(false)}>
+        {console.log('SELECTED MODAL CONTENT', modalContent)}
         <Text style={styles.modal.heading}>
-          {modalContent.attributes?.namaLengkap}
+          {modalContent?.apl_01s[0]?.namaLengkap}
         </Text>
         <Text style={styles.modal.subHeading}>
-          {modalContent.attributes?.email}
+          {modalContent?.apl_01s[0]?.email}
         </Text>
         <TouchableOpacity
           onPress={() => {
-            navigation.navigate('APL01', {
-              modalContent,
+            navigation.navigate('FormAPL01', {
+              content: modalContent,
               role: 'Admin',
+              intent: 'Edit',
             })
             setIsOpen(false)
           }}
@@ -131,7 +163,7 @@ export default function Asesi({ navigation }) {
           />
           <Text style={styles.button.text}>APL-01</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button}>
+        {/* <TouchableOpacity style={styles.button}>
           <AntDesign
             style={styles.button.icon}
             name='form'
@@ -151,16 +183,21 @@ export default function Asesi({ navigation }) {
             name='form'
           />
           <Text style={styles.button.text}>AK-02</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </Modal>
-      <Fab
+      {/* <Fab
         renderInPortal={false}
         zIndex={1}
         shadow={2}
         size='lg'
         color='white'
         label='Tambah Data'
-        onPress={() => navigation.navigate('FormAPL01')}
+        onPress={() =>
+          navigation.navigate('FormAPL01', {
+            role: 'Admin',
+            intent: 'Add',
+          })
+        }
         icon={
           <Icon
             color='white'
@@ -169,7 +206,7 @@ export default function Asesi({ navigation }) {
             size='md'
           />
         }
-      />
+      /> */}
     </LinearGradient>
   )
 }

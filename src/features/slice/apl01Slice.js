@@ -10,10 +10,18 @@ const config = {
   headers: HEADER,
 }
 
+const configEdit = {
+  url: '/apl-01s/',
+  method: 'put',
+  baseURL: BASE_URL,
+  headers: HEADER,
+}
+
 const initialState = {
   isPending: false,
   isSuccess: false,
   isFailed: false,
+  message: '',
   data: '',
 }
 
@@ -50,6 +58,81 @@ export const postAPL01 = createAsyncThunk('asesi/postAPL01', async (body) => {
     throw e
   }
 })
+
+export const editAPL01 = createAsyncThunk('asesi/editAPL01', async (body) => {
+  try {
+    // console.log('BODY', body)
+    const ijazahResponse =
+      typeof body.fileData.ijazah == 'number'
+        ? { id: body.fileData.ijazah }
+        : await uploadFile(body.fileData.ijazah)
+    const KTPResponse =
+      typeof body.fileData.KTP == 'number'
+        ? { id: body.fileData.KTP }
+        : await uploadFile(body.fileData.KTP)
+    const transkripResponse =
+      typeof body.fileData.transkrip == 'number'
+        ? { id: body.fileData.transkrip }
+        : await uploadFile(body.fileData.transkrip)
+    const photoResponse =
+      typeof body.fileData.photo == 'number'
+        ? { id: body.fileData.photo }
+        : await uploadFile(body.fileData.photo)
+
+    // console.log('RESPONSE IJAZAH', ijazahResponse)
+    // console.log('RESPONSE KTP', KTPResponse)
+    // console.log('RESPONSE TRANSKRIP', transkripResponse)
+    // console.log('RESPONSE PHOTO', photoResponse)
+
+    const req = {
+      ...configEdit,
+      url: configEdit.url + body.id,
+      data: {
+        data: {
+          ...body.inputData,
+          ijazah: ijazahResponse.id,
+          identitas: KTPResponse.id,
+          transkrip: transkripResponse.id,
+          pasFoto: photoResponse.id,
+        },
+      },
+    }
+    const response = await axios.request(req)
+    console.log('AXIOS RESPONSE', response)
+    return response
+  } catch (e) {
+    ToastAndroid.show(e.response.data.error.name, ToastAndroid.SHORT)
+    console.log('POST ERROR', e)
+    throw e
+  }
+})
+
+export const approvalAPL01 = createAsyncThunk(
+  'asesi/approvalAPL01',
+  async (body) => {
+    try {
+      const req = {
+        ...configEdit,
+        url: configEdit.url + body.id,
+        data: {
+          data: {
+            ijazahApproval: body.inputData.ijazahApproval,
+            identitasApproval: body.inputData.identitasApproval,
+            transkripApproval: body.inputData.transkripApproval,
+            pasFotoApproval: body.inputData.pasFotoApproval,
+          },
+        },
+      }
+      const response = await axios.request(req)
+      console.log('AXIOS APPROVAL RESPONSE', response)
+      return response
+    } catch (e) {
+      ToastAndroid.show(e.response.data.error.name, ToastAndroid.SHORT)
+      console.log('POST APPROVAL ERROR', e)
+      throw e
+    }
+  }
+)
 
 const uploadFile = (data) => {
   return new Promise((resolve, reject) => {
@@ -101,13 +184,16 @@ export const APL01 = createSlice({
   },
   extraReducers(builder) {
     builder
+      // post
       .addCase(postAPL01.pending, (state, action) => {
+        state.message = 'Mohon Tunggu'
         state.isPending = true
         state.isSuccess = false
         state.isFailed = false
       })
       .addCase(postAPL01.fulfilled, (state, action) => {
         ToastAndroid.show('POST APL-01 SUCCESS ', ToastAndroid.SHORT)
+        state.message = 'APL01 Berhasil dipost'
         state.data = action.payload?.data?.data
         state.isPending = false
         state.isSuccess = true
@@ -116,6 +202,55 @@ export const APL01 = createSlice({
       .addCase(postAPL01.rejected, (state, action) => {
         ToastAndroid.show('POST APL-01 FAILED ', ToastAndroid.SHORT)
         console.log('POST APL-01 FAILED', action)
+        state.message = action.error.message
+        state.isPending = false
+        state.isSuccess = false
+        state.isFailed = true
+      })
+
+      // edit
+      .addCase(editAPL01.pending, (state, action) => {
+        state.message = 'Mohon Tunggu'
+        state.isPending = true
+        state.isSuccess = false
+        state.isFailed = false
+      })
+      .addCase(editAPL01.fulfilled, (state, action) => {
+        ToastAndroid.show('POST APL-01 SUCCESS ', ToastAndroid.SHORT)
+        state.message = 'APL01 Berhasil dipost'
+        state.data = action.payload?.data?.data
+        state.isPending = false
+        state.isSuccess = true
+        state.isFailed = false
+      })
+      .addCase(editAPL01.rejected, (state, action) => {
+        ToastAndroid.show('POST APL-01 FAILED ', ToastAndroid.SHORT)
+        console.log('POST APL-01 FAILED', action)
+        state.message = action.error.message
+        state.isPending = false
+        state.isSuccess = false
+        state.isFailed = true
+      })
+
+      // approval
+      .addCase(approvalAPL01.pending, (state, action) => {
+        state.message = 'Mohon Tunggu'
+        state.isPending = true
+        state.isSuccess = false
+        state.isFailed = false
+      })
+      .addCase(approvalAPL01.fulfilled, (state, action) => {
+        ToastAndroid.show('Approval SUCCESS ', ToastAndroid.SHORT)
+        state.message = 'Approval Berhasil'
+        state.data = action.payload?.data?.data
+        state.isPending = false
+        state.isSuccess = true
+        state.isFailed = false
+      })
+      .addCase(approvalAPL01.rejected, (state, action) => {
+        ToastAndroid.show('Approval FAILED ', ToastAndroid.SHORT)
+        console.log('Approval FAILED', action)
+        state.message = action.error.message
         state.isPending = false
         state.isSuccess = false
         state.isFailed = true

@@ -19,6 +19,23 @@ const initialState = {
   token: null,
 }
 
+// init state for login bypass
+// const initialState = {
+//   isLoginPending: false,
+//   isLoginSuccess: true,
+//   isLoginRejected: false,
+//   errorMessage: null,
+//   user: {
+//     id: 1,
+//     username: 'admin1',
+//     email: 'admin1@gmail.com',
+//     role: {
+//       name: 'Admin',
+//     },
+//   },
+//   token: null,
+// }
+
 const configLogin = {
   url: '/auth/local',
   method: 'post',
@@ -29,29 +46,11 @@ const configLogin = {
 }
 
 const configFetchMe = {
-  url: '/users/me?populate=*',
+  url: '/users/me?populate=deep',
   method: 'get',
   baseURL: BASE_URL,
   headers: {},
 }
-
-// function callLoginApi(email, password) {
-//   return new Promise(function (resolve, reject) {
-//     let token = ""
-//     setTimeout(() => {
-//       token = ""
-//       axios.post('https://fakestoreapi.com/auth/login', {
-//         username: email,
-//         password
-//       }).then(res => {
-//         console.log("LOGIN RESPONSE", res)
-//         token = res.data.token
-//         console.log("LOGIN TOKEN", token)
-//         resolve({ email, role: "user", token })
-//       }).catch(err => reject("Email/username atau password salah"))
-//     }, 1000);
-//   });
-// }
 
 const doLogin = ({ identifier, password }) => {
   return new Promise((resolve, reject) => {
@@ -74,43 +73,39 @@ const doLogin = ({ identifier, password }) => {
   })
 }
 
-// const doFetchMe = (jwt) => {
-//   return new Promise((resolve, reject) => {
-//     const fetchMeRequest = {
-//       ...configFetchMe,
-//       headers: {
-//         Authentication: jwt,
-//       },
-//     }
-//     const userDataResponse = axios.get(
-//       'http://192.168.10.106:1337/api/users/me?populate=role',
-//       {
-//         // credentials: 'include',
-//         headers: {
-//           // 'Content-Type': 'text/plain',
-//           Authorization:
-//             'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNjcwMjU2MTA3LCJleHAiOjE2NzI4NDgxMDd9.iVc6j0vVZYTyg8OALHgT2UdFyDapOX8mZssM09lLegs',
-//         },
-//       }
-//     )
-//     console.log('RESPONSE IN AUTH LOGIN WITH FETCHME', userDataResponse)
-//     resolve(userDataResponse)
-//   })
-// }
+const doFetchMe = (jwt) => {
+  return new Promise((resolve, reject) => {
+    const fetchMeRequest = {
+      ...configFetchMe,
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+    const userDataResponse = axios.request(fetchMeRequest)
+    console.log('RESPONSE IN AUTH LOGIN WITH FETCHME', userDataResponse)
+    resolve(userDataResponse)
+  })
+}
+
+export const fetchMe = createAsyncThunk('auth/fetchMe', async () => {
+  try {
+    const response = await doFetchMe(jwtTemp)
+    console.log('RESPONSE FETCH ME', response)
+    return response
+  } catch (err) {
+    ToastAndroid.show('ERROR FETCH ME', ToastAndroid.SHORT)
+    console.log('ERROR FETCH ME', err)
+    throw err
+  }
+})
 
 export const authLoginAPI = createAsyncThunk(
   'auth/login',
   async ({ identifier, password }) => {
     try {
       const response = await doLogin({ identifier, password }).then((res) => {
-        const fetchMeRequest = {
-          ...configFetchMe,
-          headers: {
-            Authorization: `Bearer ${res.data.jwt}`,
-          },
-        }
-        const userDataResponse = axios.request(fetchMeRequest)
-        console.log('RESPONSE IN AUTH LOGIN WITH FETCHME', userDataResponse)
+        const userDataResponse = doFetchMe(res.data.jwt)
+        // console.log('RESPONSE IN AUTH LOGIN WITH FETCHME', userDataResponse)
         jwtTemp = res.data.jwt
         return userDataResponse
       })
@@ -146,6 +141,7 @@ export const authSlice = createSlice({
   },
   extraReducers(builder) {
     builder
+    // login
       .addCase(authLoginAPI.pending, (state) => {
         ToastAndroid.show('Mohon Tunggu, Sedang Login', ToastAndroid.SHORT)
         state.isLoginSuccess = false
@@ -173,6 +169,16 @@ export const authSlice = createSlice({
         state.isLoginRejected = true
         state.token = null
         state.errorMessage = action.error.message
+      })
+
+      // fetchme
+      .addCase(fetchMe.pending, (state) => {
+      })
+      .addCase(fetchMe.fulfilled, (state, action) => {
+        const data = action.payload.data
+        state.user = data
+      })
+      .addCase(fetchMe.rejected, (state, action) => {
       })
   },
 })

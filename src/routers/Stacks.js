@@ -7,6 +7,7 @@ import APL01 from '../screens/APL01'
 import Home from '../screens/Home'
 import Asesi from '../screens/Asesi'
 import FormAPL01 from '../screens/FormAPL01'
+import FormAddUser from '../screens/FormAddUser'
 import Asesor from '../screens/Asesor'
 import Event from '../screens/Event'
 import Rekap from '../screens/Rekap'
@@ -48,8 +49,8 @@ export default function Stacks() {
               name='Home'
               component={Home}
               options={{
-                title: 'Welcome',
-                headerTintColor: '#000000',
+                title: 'Dashboard',
+                headerTintColor: COLORS.third,
                 headerRight: () => (
                   <TouchableOpacity
                     style={{
@@ -92,6 +93,11 @@ export default function Stacks() {
               name='FormAPL01'
               component={FormAPL01}
               options={{ title: 'Form APL-01' }}
+            />
+            <Stack.Screen
+              name='FormAddUser'
+              component={FormAddUser}
+              options={{ title: 'Form Tambah User' }}
             />
             <Stack.Screen
               name='APL01'

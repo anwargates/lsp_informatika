@@ -15,13 +15,19 @@ import PicSettings from '../../image/ic_baseline-miscellaneous-services.png'
 import PicSKKNI from '../../image/ic_baseline-dvr.png'
 import { StyleSheet } from 'react-native'
 import { GLOBAL_STYLE } from '../Styles/Styles'
+import { HStack, VStack } from 'native-base'
 import { useNavigation } from '@react-navigation/native'
-import { VStack } from 'native-base'
 
-export const AdminComponent = () => {
+export const AsesorComponent = () => {
   const authState = useSelector((state) => state.auth)
   const navigation = useNavigation()
   const dispatch = useDispatch()
+
+  const handleLogout = async () => {
+    await dispatch(logout())
+    // navigation.replace('Login')
+    ToastAndroid.show('Logout Berhasil', ToastAndroid.SHORT)
+  }
 
   return (
     <LinearGradient
@@ -32,7 +38,7 @@ export const AdminComponent = () => {
           <TouchableOpacity>
             <Text style={{ color: 'white', fontSize: 16 }}>Selamat Datang</Text>
             <Text style={{ color: 'white', fontSize: 32 }}>
-              {authState.user.namaLengkap}
+              {authState.user.asesorAccount?.namaLengkap}
             </Text>
             <View
               style={{
@@ -41,54 +47,26 @@ export const AdminComponent = () => {
                 borderBottomWidth: StyleSheet.hairlineWidth,
               }}
             />
-            <Text style={{ color: 'white', fontSize: 14 }}>Event Terbaru</Text>
+            <Text style={{ color: 'white', fontSize: 14 }}>Skema saat ini</Text>
             <Text style={{ color: 'white', fontSize: 16, fontWeight: '500' }}>
-              VSGA Malang 2022
+              Junior Web Developer
             </Text>
           </TouchableOpacity>
         </VStack>
-        {/* <Heading>Welcome, Admin LSP Informatika</Heading> */}
-        <VStack style={styles.menuBox}>
-          <ScrollView>
-            <View style={styles.row}>
-              <CardComponent
-                text='Event'
-                onPress={() => navigation.navigate('Event')}
-                path='calendar'
-              />
-              <CardComponent
-                text='Tambah User'
-                onPress={() => navigation.navigate('FormAddUser')}
-                path='account-plus'
-              />
-            </View>
-            <View style={styles.row}>
-              <CardComponent
-                text='Asesi'
-                onPress={() => navigation.navigate('Asesi')}
-                path='account-multiple-check'
-              />
-              <CardComponent
-                text='Asesor'
-                onPress={() => navigation.navigate('Asesor')}
-                path='account-tie'
-              />
-            </View>
-            <View style={styles.row}>
-              <CardComponent
-                text='SKKNI'
-                // onPress={() => navigation.navigate("Asesi")}
-                path='book-open-page-variant'
-              />
-              <CardComponent
-                text='Settings'
-                // onPress={() => navigation.navigate("Asesor")}
-                path='cog'
-              />
-            </View>
-          </ScrollView>
-        </VStack>
-        {/* <StatusBar style="auto" /> */}
+        <ScrollView>
+          <View style={styles.row}>
+            <CardComponent
+              text='Event'
+              onPress={() => navigation.navigate('Event')}
+              path='calendar'
+            />
+            <CardComponent
+              text='Asesi'
+              onPress={() => navigation.navigate('Asesi')}
+              path='account-multiple-check'
+            />
+          </View>
+        </ScrollView>
       </View>
     </LinearGradient>
   )
@@ -111,9 +89,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     margin: 6,
-  },
-  menuBox: {
-    // flex: 2,
   },
   // text: {
   //   color: "#ffffff",

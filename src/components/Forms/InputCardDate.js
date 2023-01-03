@@ -7,8 +7,10 @@ import { FORM_STYLES } from '../Styles/FormStyles'
 import { useState } from 'react'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { COLORS } from '../Colors/Colors'
+import { useSelector } from 'react-redux'
 
 export const InputCardDate = (props) => {
+  const roleState = useSelector((state) => state.auth.user.role.name)
   const [birthDate, setBirthDate] = props.handle
   const [showBirthDate, setShowBirthDate] = useState(false)
 
@@ -33,6 +35,7 @@ export const InputCardDate = (props) => {
       </FormControl.Label>
       <TouchableOpacity
         style={FORM_STYLES.input}
+        disabled={roleState === 'Asesi' ? false : true}
         onPress={() => {
           setShowBirthDate(true)
         }}>
@@ -50,7 +53,7 @@ export const InputCardDate = (props) => {
           focusOutlineColor={COLORS.third}
           backgroundColor='white'
           borderColor='white'
-          style={{ flex: 1 }}
+          style={FORM_STYLES.input}
           isRequired={true}
           isReadOnly={true}
           value={moment(birthDate).format('YYYY-MM-DD')}

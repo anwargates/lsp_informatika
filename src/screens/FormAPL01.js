@@ -26,6 +26,7 @@ import {
 
 import { COLORS } from '../components/Colors/Colors'
 import {
+  editAPL01,
   postAPL01,
   setDefaultState,
   uploadFile,
@@ -39,80 +40,124 @@ import { InputCardDate } from '../components/Forms/InputCardDate'
 import { ActivityIndicator } from 'react-native'
 import { BlurView } from 'expo-blur'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { useFocusEffect } from '@react-navigation/native'
+import { fetchMe } from '../features/slice/authSlice'
 
-export default function FormAPL01({ navigation }) {
-  const submitCheck = useSelector((state) => state.APL01)
-  const dispatch = useDispatch()
-  const [formState, setFormState] = useState({
+export default function FormAPL01({ navigation, route }) {
+  // console.log("ROUTE", route)
+  const item = route.params?.content?.apl_01s[0]
+  // const modalContent= route.params?.modalContent
+  //const item = route.params.role === 'Asesi'
+  //   ? route.params.authState.user.apl_01s[0]
+  //   : route.params.modalContent.attributes
+
+  console.log('ITEM CONTENT', item)
+  // console.log('MODAL CONTENT', modalContent)
+
+  const initialFormState = {
     namaLengkap: '',
     NIK: '',
-    kotaDomisili: '',
     tempatLahir: '',
     tanggalLahir: '',
     kebangsaan: '',
-    alamatRumah: '',
+    alamat: '',
     kodePos: '',
-    nomorTelepon: '',
+    nomorTelpon: '',
     email: '',
     pendidikanTerakhir: '',
+  }
+
+  const presistFormState = () => {
+    const { user, skema, event, asesor, ...rest } = item
+    return rest
+  }
+
+  // const status = route.params.?:
+  const roleState = useSelector((state) => state.auth.user.role.name)
+  const submitCheck = useSelector((state) => state.APL01)
+  const dispatch = useDispatch()
+  const [formState, setFormState] = useState(() => {
+    if (route.params.intent === 'Add') {
+      return initialFormState
+    } else {
+      return presistFormState()
+    }
   })
+
+  // TO CHANGE
   // state show image from local uri
-  const [showIjazah, setShowIjazah] = useState(null)
-  const [showKTP, setShowKTP] = useState(null)
-  const [showTranskrip, setShowTranskrip] = useState(null)
-  const [showPhoto, setShowPhoto] = useState(null)
+  // kalau local diganti jadi formState.ijazah?.url ? IMAGE_BASE_URL + formState.ijazah?.url : null
+  // kalau deployment hanya url
+  const [showIjazah, setShowIjazah] = useState(
+    formState.ijazah?.url ? IMAGE_BASE_URL + formState.ijazah?.url : null
+  )
+  const [showKTP, setShowKTP] = useState(
+    formState.identitas?.url ? IMAGE_BASE_URL + formState.identitas?.url : null
+  )
+  const [showTranskrip, setShowTranskrip] = useState(
+    formState.transkrip?.url ? IMAGE_BASE_URL + formState.transkrip?.url : null
+  )
+  const [showPhoto, setShowPhoto] = useState(
+    formState.pasFoto?.url ? IMAGE_BASE_URL + formState.pasFoto?.url : null
+  )
 
   // state formdata
-  const [ijazah, setIjazah] = useState(null)
-  const [KTP, setKTP] = useState(null)
-  const [transkrip, setTranskrip] = useState(null)
-  const [photo, setPhoto] = useState(null)
+  const [ijazah, setIjazah] = useState(formState.ijazah?.id ?? null)
+  const [KTP, setKTP] = useState(formState.identitas?.id ?? null)
+  const [transkrip, setTranskrip] = useState(formState.transkrip?.id ?? null)
+  const [photo, setPhoto] = useState(formState.pasFoto?.id ?? null)
 
   // state radio
-  const [jenisKelamin, setJenisKelamin] = useState('L')
-  const [skemaSertifikasi, setSkemaSertifikasi] = useState(null)
-  const [tujuanAsesmen, setTujuanAsesmen] = useState(null)
+  const [jenisKelamin, setJenisKelamin] = useState(formState?.jenisKelamin)
+  const [skemaSertifikasi, setSkemaSertifikasi] = useState(
+    formState?.skemaSertifikasi
+  )
+  const [tujuanAsesmen, setTujuanAsesmen] = useState(formState?.tujuanAsesmen)
 
   // state tanggal lahir
-  const [birthDate, setBirthDate] = useState(new Date())
+  const [birthDate, setBirthDate] = useState(
+    formState.tanggalLahir !== '' ? formState.tanggalLahir : new Date()
+  )
 
-  // const [fileID, setFileID] = useState({
-  //   ijazah: null,
-  //   KTP: null,
-  //   transkrip: null,
-  //   photo: null,
-  // })
+  // state status approval
+  const [ijazahApprovalState, setIjazahApprovalState] = useState(
+    formState.ijazahApproval
+  )
+  const [identitasApprovalState, setIdentitasApprovalState] = useState(
+    formState?.identitasApproval
+  )
+  const [transkripApprovalState, setTranskripApprovalState] = useState(
+    formState?.transkripApproval
+  )
+  const [pasFotoApprovalState, setPasFotoApprovalState] = useState(
+    formState?.pasFotoApproval
+  )
 
-  useEffect(() => {
-    dispatch(setDefaultState())
-  }, [])
+  useFocusEffect(
+    React.useCallback(() => {
+      // Do something when the screen is focused
+      dispatch(setDefaultState())
+      return () => {
+        // Do something when the screen is unfocused
+        // Useful for cleanup functions
+        dispatch(fetchMe())
+      }
+    }, [])
+  )
 
-  useEffect(() => {
-    // console.log('formState', formState)
-  }, [formState])
-
-  // const handleFileUpload = () => {
-  //   const disp1 = dispatch(uploadFile(ijazah))
-  //   const disp2 = dispatch(uploadFile(KTP))
-  //   const disp3 = dispatch(uploadFile(transkrip))
-  //   const disp4 = dispatch(uploadFile(photo))
-  //   Promise.all([disp1, disp2, disp3, disp4]).then((v) =>
-  //     console.log('PROMISE RESPONSE', v)
-  //   )
-  //   // console.log('DISPATCH RETURN IJAZAH', disp1)
-  //   // console.log('DISPATCH RETURN KTP', disp2)
-  //   // console.log('DISPATCH RETURN TRANSKRIP', disp3)
-  //   // console.log('DISPATCH RETURN PHOTO', disp4)
-  // }
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     let submitReady = {
+      id: item?.id ?? '',
       inputData: {
         ...formState,
         jenisKelamin: jenisKelamin,
         tujuanAsesmen: tujuanAsesmen,
         skemaSertifikasi: skemaSertifikasi,
         tanggalLahir: birthDate,
+        ijazahApproval: ijazahApprovalState,
+        identitasApproval: identitasApprovalState,
+        transkripApproval: transkripApprovalState,
+        pasFotoApproval: pasFotoApprovalState,
       },
       fileData: {
         ijazah: ijazah,
@@ -122,13 +167,18 @@ export default function FormAPL01({ navigation }) {
       },
     }
     console.log('submit ready', submitReady)
-    dispatch(postAPL01(submitReady))
+    route.params.intent === 'Edit'
+      ? await dispatch(editAPL01(submitReady))
+      : await dispatch(postAPL01(submitReady))
     // console.log(disp)
   }
 
   return (
     <>
-      {submitCheck.isSuccess && navigation.navigate('Asesi')}
+      {/* {console.log("FORM STATE", formState)} */}
+      {/* {console.log("IJAZAH APPROVAL STATE", formState.ijazahApproval)}
+      {console.log("IJAZAH APPROVAL STATE", ijazahApprovalState)} */}
+      {/* {submitCheck.isSuccess && navigation.navigate('Asesi')} */}
       {submitCheck.isPending && (
         <BlurView
           intensity={100}
@@ -160,12 +210,12 @@ export default function FormAPL01({ navigation }) {
               icon='identifier'
               handle={[formState, setFormState]}
             />
-            <InputCard
+            {/* <InputCard
               name='kotaDomisili'
               label='Kota Domisili'
               icon='home-city'
               handle={[formState, setFormState]}
-            />
+            /> */}
             <HStack space={2}>
               <InputCard
                 name='tempatLahir'
@@ -180,6 +230,9 @@ export default function FormAPL01({ navigation }) {
                 handle={[birthDate, setBirthDate]}
               />
             </HStack>
+            <FormControl.Label _text={FORM_STYLES.inputLabel}>
+              Jenis Kelamin
+            </FormControl.Label>
             <HStack>
               <TouchableOpacity
                 style={[
@@ -187,7 +240,8 @@ export default function FormAPL01({ navigation }) {
                   FORM_STYLES.genderButton.male,
                   jenisKelamin === 'L' ? FORM_STYLES.genderButton.enabled : '',
                 ]}
-                onPress={() => setJenisKelamin('L')}>
+                onPress={() => setJenisKelamin('L')}
+                disabled={roleState === 'Asesi' ? false : true}>
                 <Icon
                   as={<MaterialCommunityIcons name='gender-male' />}
                   size={5}
@@ -210,7 +264,8 @@ export default function FormAPL01({ navigation }) {
                   FORM_STYLES.genderButton.female,
                   jenisKelamin === 'P' ? FORM_STYLES.genderButton.enabled : '',
                 ]}
-                onPress={() => setJenisKelamin('P')}>
+                onPress={() => setJenisKelamin('P')}
+                disabled={roleState === 'Asesi' ? false : true}>
                 <Icon
                   as={<MaterialCommunityIcons name='gender-female' />}
                   size={5}
@@ -228,26 +283,26 @@ export default function FormAPL01({ navigation }) {
                 </Text>
               </TouchableOpacity>
             </HStack>
-            <InputCard
+            {/* <InputCard
               name='kebangsaan'
               label='Kebangsaan'
               icon='flag'
               handle={[formState, setFormState]}
-            />
+            /> */}
             <InputCard
-              name='alamatRumah'
+              name='alamat'
               label='Alamat Rumah'
               icon='home'
               handle={[formState, setFormState]}
             />
-            <InputCard
+            {/* <InputCard
               name='kodePos'
               label='Kode Pos'
               icon='mailbox'
               handle={[formState, setFormState]}
-            />
+            /> */}
             <InputCard
-              name='nomorTelepon'
+              name='nomorTelpon'
               label='Nomor Telepon'
               icon='whatsapp'
               handle={[formState, setFormState]}
@@ -274,7 +329,8 @@ export default function FormAPL01({ navigation }) {
                   value={skemaSertifikasi}
                   onChange={(v) => {
                     setSkemaSertifikasi(v)
-                  }}>
+                  }}
+                  isReadOnly={roleState === 'Asesi' ? false : true}>
                   <Radio
                     value='KKNI'
                     my={1}>
@@ -301,7 +357,8 @@ export default function FormAPL01({ navigation }) {
                   value={tujuanAsesmen}
                   onChange={(v) => {
                     setTujuanAsesmen(v)
-                  }}>
+                  }}
+                  isReadOnly={roleState === 'Asesi' ? false : true}>
                   <Radio
                     value='Sertifikat Baru'
                     my={1}>
@@ -321,21 +378,31 @@ export default function FormAPL01({ navigation }) {
               type='Ijazah'
               handleShow={[showIjazah, setShowIjazah]}
               handleFormData={[ijazah, setIjazah]}
+              handleApproval={[ijazahApprovalState, setIjazahApprovalState]}
             />
             <FileUploader
               type='KTP'
               handleShow={[showKTP, setShowKTP]}
               handleFormData={[KTP, setKTP]}
+              handleApproval={[
+                identitasApprovalState,
+                setIdentitasApprovalState,
+              ]}
             />
             <FileUploader
               type='Transkrip'
               handleShow={[showTranskrip, setShowTranskrip]}
               handleFormData={[transkrip, setTranskrip]}
+              handleApproval={[
+                transkripApprovalState,
+                setTranskripApprovalState,
+              ]}
             />
             <FileUploader
               type='Foto'
               handleShow={[showPhoto, setShowPhoto]}
               handleFormData={[photo, setPhoto]}
+              handleApproval={[pasFotoApprovalState, setPasFotoApprovalState]}
             />
           </FormControl>
           <View style={{ height: 64 }} />
@@ -346,7 +413,7 @@ export default function FormAPL01({ navigation }) {
           <TouchableOpacity
             style={[FORM_STYLES.button, FORM_STYLES.button.submit]}
             onPress={() => handleSubmit()}>
-            <Text style={FORM_STYLES.button.text}>Submit</Text>
+            <Text style={FORM_STYLES.button.text}>SIMPAN</Text>
           </TouchableOpacity>
         </KeyboardAvoidingView>
       </LinearGradient>
